@@ -9,6 +9,10 @@ module Language.Haskell.Meta.Settings (baseDynFlags) where
 
 {- ORMOLU_DISABLE -}
 
+#if MIN_VERSION_ghc(9, 14, 0)
+import GHC.Unit.Types (stringToUnitId)
+#endif
+
 #if MIN_VERSION_ghc(9,0,0)
 import GHC.Settings.Config
 import GHC.Driver.Session
@@ -98,6 +102,9 @@ fakeSettings = Settings
   , sTargetPlatform=platform
   , sPlatformMisc=platformMisc
   , sToolSettings=toolSettings
+#if MIN_VERSION_ghc(9, 14, 0)
+  , sUnitSettings=unitSettings
+#endif
   }
 #elif MIN_VERSION_ghc(8, 10, 0)
   { sGhcNameVersion=ghcNameVersion
@@ -167,6 +174,9 @@ fakeSettings = Settings
 #else
     platformConstants =
       PlatformConstants{pc_DYNAMIC_BY_DEFAULT=False,pc_WORD_SIZE=8}
+#endif
+#if MIN_VERSION_ghc(9, 14, 0)
+    unitSettings = UnitSettings { unitSettings_baseUnitId = stringToUnitId "" }
 #endif
 
 #if MIN_VERSION_ghc(9, 6, 0)
