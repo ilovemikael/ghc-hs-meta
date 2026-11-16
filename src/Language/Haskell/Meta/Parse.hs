@@ -7,7 +7,7 @@ module Language.Haskell.Meta.Parse (parseExp, parseExpWithExts, parseExpWithFlag
 #if MIN_VERSION_ghc(9,4,0)
 import GHC.Parser.Errors.Ppr ()
 import GHC.Parser.Annotation (LocatedA)
-import GHC.Utils.Outputable
+import GHC.Utils.Outputable (defaultSDocContext,ppr,renderWithContext)
 #elif MIN_VERSION_ghc(9,2,0)
 import qualified GHC.Parser.Errors.Ppr as ParserErrorPpr
 import GHC.Parser.Annotation (LocatedA)
@@ -29,6 +29,9 @@ import qualified GHC.Parser.Lexer as Lexer
 import qualified GHC.Parser as Parser
 import GHC.Data.FastString
 import GHC.Types.SrcLoc
+import GHC.Types.Name
+import GHC.Types.Name.Reader
+import qualified GHC.Unit.Module as Module
 #else
 import qualified SrcLoc
 import DynFlags (DynFlags)
@@ -58,7 +61,7 @@ import Language.Haskell.TH (Extension(..))
 import qualified Language.Haskell.TH.Syntax as TH
 
 import qualified Language.Haskell.Meta.Settings as Settings
-import Language.Haskell.Meta.Translate (toExp)
+-- import Language.Haskell.Meta.Translate (toExp)
 
 -- | Parse a Haskell expression from source code into a Template Haskell expression.
 -- See @parseExpWithExts@ or @parseExpWithFlags@ for customizing with additional extensions and settings.
@@ -82,6 +85,19 @@ parseExp = parseExpWithExts
 parseExpWithExts :: [Extension] -> String -> Either (Int, Int, String) TH.Exp
 parseExpWithExts exts = parseExpWithFlags (Settings.baseDynFlags exts)
 
+toName :: RdrName -> TH.Name
+toName n = case n of
+  (Unqual o) -> TH.mkName (occNameString o)
+  (Qual m o) -> TH.mkName (Module.moduleNameString m <> "." <> occNameString o)
+  (Orig _ _) -> error "orig"
+  (Exact _) -> error "exact"
+
+toExp :: DynFlags -> HsExpr GhcPs -> TH.Exp
+toExp _ (HsVar _ n) =
+  let n' = unLoc n
+   in if isRdrDataCon n'
+        then TH.ConE (toName n')
+        else TH.VarE (toName n')
 -- | Parse a Haskell expression from source code into a Template Haskell expression
 -- using a given set of GHC DynFlags.
 parseExpWithFlags :: DynFlags -> String -> Either (Int, Int, String) TH.Exp

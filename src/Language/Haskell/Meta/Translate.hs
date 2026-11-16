@@ -47,7 +47,7 @@ import GHC.Data.FastString
 #if MIN_VERSION_ghc(9,2,0)
 import GHC.Utils.Outputable (ppr)
 import GHC.Types.Basic (Boxity(..))
-import GHC.Types.SourceText (il_value, rationalFromFractionalLit)
+import GHC.Types.SourceText
 import GHC.Driver.Ppr (showSDoc)
 #else
 import GHC.Utils.Outputable (ppr, showSDoc)
@@ -99,7 +99,7 @@ toLit (HsRat _ f _) = TH.FloatPrimL (fl_value f)
 toLit (HsFloatPrim _ f) = TH.FloatPrimL (fl_value f)
 toLit (HsDoublePrim _ f) = TH.DoublePrimL (fl_value f)
 #if MIN_VERSION_ghc(9,12,0)
-toLit (HsMultilineString _ s) = TH.StringL (unpackFS s)
+toLit (TH.MultilineStrings _ s) = TH.StringL (unpackFS s)
 #endif
 #if MIN_VERSION_ghc(9,8,0)
 toLit HsInt8Prim{} = noTH "toLit" "HsInt8Prim"
@@ -113,7 +113,7 @@ toLit HsWord32Prim{} = noTH "toLit" "HsWord32Prim"
 toLit (XLit _) = noTH "toLit" "XLit"
 #endif
 
-toLit' :: OverLitVal -> TH.Lit
+toLit' :: OverLitVal x -> TH.Lit
 toLit' (HsIntegral i) = TH.IntegerL (il_value i)
 toLit' (HsFractional f) = TH.RationalL (fl_value f)
 toLit' (HsIsString _ fs) = TH.StringL (unpackFS fs)

@@ -176,7 +176,10 @@ fakeSettings = Settings
       PlatformConstants{pc_DYNAMIC_BY_DEFAULT=False,pc_WORD_SIZE=8}
 #endif
 #if MIN_VERSION_ghc(9, 14, 0)
-    unitSettings = UnitSettings { unitSettings_baseUnitId = stringToUnitId "" }
+    unitSettings = UnitSettings { unitSettings_baseUnitId = stringToUnitId ""
+    , unitSettings_ghcUnitId = stringToUnitId ""
+    , unitSettings_ghcInternalUnitId = stringToUnitId ""
+    }
 #endif
 
 #if MIN_VERSION_ghc(9, 6, 0)
